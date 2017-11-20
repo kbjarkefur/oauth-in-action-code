@@ -32,11 +32,11 @@ var getAccessToken = function(req, res, next) {
 	} else if (req.query && req.query.access_token) {
 		inToken = req.query.access_token
 	}
-	
+
 	console.log('Incoming token: %s', inToken);
 	nosql.one(function(token) {
 		if (token.access_token == inToken) {
-			return token;	
+			return token;
 		}
 	}, function(err, token) {
 		if (token) {
@@ -71,13 +71,22 @@ var bobFavorites = {
 };
 
 app.get('/favorites', getAccessToken, requireAccessToken, function(req, res) {
-	
+
 	/*
 	 * Get different user information based on the information of who approved the token
 	 */
-	
-	var unknown = {user: 'Unknown', favorites: {movies: [], foods: [], music: []}};
-	res.json(unknown);
+
+	if (req.access_token.user == 'alice') {
+		res.json({user: 'alice', favorites: aliceFavorites});
+	} else if (req.access_token.user == 'bob') {
+		res.json({user: 'bob', favorites: bobFavorites});
+	} else {
+		var unknown = {user: 'Unknown', favorites: {movies: [], foods: [], music: []}};
+		res.json(unknown);
+	}
+
+
+
 
 });
 
@@ -87,4 +96,3 @@ var server = app.listen(9002, 'localhost', function () {
 
   console.log('OAuth Resource Server is listening at http://%s:%s', host, port);
 });
- 
